@@ -1,5 +1,5 @@
 /* Service worker : appli disponible hors ligne. Incrémente VERSION à chaque mise en ligne. */
-const VERSION = 'transfo-v2';
+const VERSION = 'transfo-v3';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'js/data.js', 'js/core.js', 'js/ui.js', 'js/app.js',
   'vendor/htm-preact-standalone-3.1.1.js', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/badge-96.png'];
 const FONTS = 'transfo-fonts';

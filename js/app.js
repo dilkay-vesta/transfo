@@ -489,7 +489,7 @@
 
   function CardioSheet({ open, onClose }) {
     const [f, setF] = useState({ type: 'walk', min: 30, km: '', kcal: '', date: C.today() });
-    useEffect(() => { if (open) setF({ type: 'incline', min: 25, km: '', kcal: '', date: D() }); }, [open]);
+    useEffect(() => { if (open) setF({ type: 'walk', min: 30, km: '', kcal: '', date: D() }); }, [open]);
     if (!open) return null;
     const save = e => { e.preventDefault(); if (!(+f.min > 0)) return; act(s => { const d = s.days[f.date] = s.days[f.date] || {}; (d.cardio = d.cardio || []).push({ id: C.uid(), type: f.type, min: +f.min, km: +f.km || null, kcal: +f.kcal || null }); }); toast('Cardio enregistré', { icon: 'check' }); onClose(); };
     return html`<${Sheet} open=${true} onClose=${onClose} title="Séance de cardio"><form onSubmit=${save}>
@@ -651,8 +651,14 @@
         ${[1, 2, 3, 4, 5, 6, 0].map(d => html`<div class="sched"><span>${T.DAY_NAMES[d]}</span><select class="inp" value=${T.TPL_ORDER.includes(S().settings.schedule[d]) ? S().settings.schedule[d] : 'rest'} onChange=${e => act(s => { s.settings.schedule[d] = e.target.value; })}>${['rest', ...T.TPL_ORDER].map(v => html`<option value=${v}>${v === 'rest' ? 'Repos / récupération' : T.TPL[v].name}</option>`)}</select></div>`)}
       </section>
       ${archived.length > 0 && html`<section class="card"><h2>Séances archivées</h2><div class="list">${archived.map(id => html`<div class="li"><div><b>${pr.tpls[id].name}</b><small>${pr.tpls[id].ex.length} exercices</small></div><button class="btn small" onClick=${() => editProg(p => { delete p.tpls[id].hidden; if (!p.order.includes(id)) p.order.push(id); })}>Restaurer</button></div>`)}</div></section>`}
-      ${pr && html`<button class="btn ghost block" onClick=${() => setReset(true)}>Revenir au programme d’origine</button>`}
-      <${Confirm} open=${reset} title="Revenir au programme d’origine ?" text="Les 6 séances PPL de départ sont restaurées. Tes séances personnalisées sont archivées (récupérables), ton historique n’est pas touché." ok="Restaurer" onClose=${() => setReset(false)} onOk=${() => { const u = act(s => { const old = s.settings.program; const tpls = JSON.parse(JSON.stringify(T.BASE.tpl)); for (const id in old.tpls) if (!tpls[id]) tpls[id] = { ...old.tpls[id], hidden: true }; s.settings.program = { tpls, order: T.BASE.order.slice() }; s.settings.schedule = T.DEFAULT_SCHEDULE.slice(); }, true); toast('Programme d’origine restauré', { undo: u }); }} />
+      <section class="card"><h2>Modèles de programme</h2>
+        <div class="list">
+          <button class="li" onClick=${() => setReset('home')}><div><b>PPL maison</b><small>Banc réglable, haltères, barre et disques</small></div><${Icon} n="right" /></button>
+          <button class="li" onClick=${() => setReset('gym')}><div><b>PPL salle de sport</b><small>Machines et poulies</small></div><${Icon} n="right" /></button>
+        </div>
+        <p class="muted small mt-s">Charger un modèle remplace les 6 séances PPL. Tes séances personnalisées sont archivées (récupérables), ton historique et tes records ne bougent pas.</p>
+      </section>
+      <${Confirm} open=${!!reset} title=${reset === 'gym' ? 'Charger le PPL salle de sport ?' : 'Charger le PPL maison ?'} text="Les 6 séances PPL et le planning de la semaine sont remplacés. Tu pourras annuler juste après." ok="Charger" onClose=${() => setReset(false)} onOk=${() => { const kind = reset; const u = act(s => { const old = s.settings.program || { tpls: {} }; const tpls = JSON.parse(JSON.stringify(kind === 'gym' ? T.PRESET_GYM : T.BASE.tpl)); for (const id in old.tpls) if (!tpls[id]) tpls[id] = { ...old.tpls[id], hidden: true }; s.settings.program = { tpls, order: T.BASE.order.slice() }; s.settings.schedule = T.DEFAULT_SCHEDULE.slice(); }, true); toast(kind === 'gym' ? 'Programme salle chargé' : 'Programme maison chargé', { undo: u }); }} />
     </div>`;
   }
 
